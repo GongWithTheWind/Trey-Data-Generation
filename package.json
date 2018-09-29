@@ -1,0 +1,22 @@
+{
+  "name": "datagen",
+  "version": "1.0.0",
+  "description": "Generates 10m entries to data",
+  "main": "datagen.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Trey Pernell",
+  "license": "ISC",
+  "dependencies": {
+    "async": "^2.6.1",
+    "async-parallel": "^1.2.3",
+    "cassandra-driver": "^3.5.0",
+    "faker": "^4.1.0",
+    "run-parallel": "^1.1.9",
+    "underscore": "^1.9.1"
+  },
+  "devDependencies": {
+    "bluebird": "^3.5.2"
+  }
+}
