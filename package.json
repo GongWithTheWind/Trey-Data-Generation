@@ -12,7 +12,10 @@
     "async": "^2.6.1",
     "async-parallel": "^1.2.3",
     "cassandra-driver": "^3.5.0",
+    "dotenv": "^6.0.0",
     "faker": "^4.1.0",
+    "json2csv": "^4.2.1",
+    "pg": "^7.4.3",
     "run-parallel": "^1.1.9",
     "underscore": "^1.9.1"
   },

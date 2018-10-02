@@ -1,12 +1,13 @@
 const cassandra = require('cassandra-driver');
 const async = require('async');
 const fs = require('fs');
-const client = new cassandra.Client({contactPoints: ['127.0.0.1:9042']});
 const Promise = require('bluebird');
 
+const client = new cassandra.Client({contactPoints: ['127.0.0.1:9042']});
 const readFileAsync = Promise.promisify(fs.readFile);
 
 console.time('timer');
+
 client.execute("DROP TABLE IF EXISTS demo.homes")
   .then((result) => {
     return client.execute("DROP KEYSPACE IF EXISTS demo");
@@ -33,7 +34,7 @@ client.execute("DROP TABLE IF EXISTS demo.homes")
   })
 
 async function seedDB (factor /* TODO - Refactor to take factor as ENV variable */) {
-  for (let i = 0; i < 2; i++) {
+  for (let i = 0; i < 100; i++) {
     let chunk = [];
     for (let j = 0; j < 50; j++) {
       chunk.push(j + (i * 50));
