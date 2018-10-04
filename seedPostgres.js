@@ -2,7 +2,7 @@ const { Client } = require('pg');
 const Json2csvParser = require('json2csv').Parser;
 const fs = require('fs');
 const Promise = require('bluebird');
-const fields = ["home_id", "images"];
+const fields = ["id", "home_id", "image", "image_id", "caption"];
 require('dotenv').config();
 
 const json2csvParser = new Json2csvParser({ fields });
@@ -10,48 +10,63 @@ const readFileAsync = Promise.promisify(fs.readFile);
 const writeFileAsync = Promise.promisify(fs.writeFile);
 const deleteFileAsync = Promise.promisify(fs.unlink);
 
+let ID_NUM = 0;
 const client = new Client({
   host: 'localhost',
   database: 'treypurnell',
 }) 
 
 const mainTableQuery = 
-`CREATE TABLE homes (
+`CREATE TABLE images (
+  id integer NOT NULL,
   home_id integer NOT NULL,
-  images jsonb) PARTITION BY RANGE (home_id)`;
+  image varchar(255),
+  image_id integer NOT NULL,
+  caption character varying)`; //  PARTITION BY RANGE (home_id)
 
 client.connect()
 
 async function createPartitionedTable() {
   await client.query(mainTableQuery);
-  for (let i = 0; i < 10000000; i += 100000) {
-    rangeStart = i;
-    rangeEnd = i + 100000;
+  // for (let i = 0; i < 10000000; i += 100000) {
+  //   rangeStart = i;
+  //   rangeEnd = i + 100000;
 
-    const partitionQuery = 
-    `CREATE TABLE homes_${rangeStart}_${rangeEnd}
-    PARTITION OF homes (PRIMARY KEY (home_id))
-    FOR VALUES FROM (${rangeStart}) to (${rangeEnd})`;
+  //   const partitionQuery = 
+  //   `CREATE TABLE images_${rangeStart}_${rangeEnd}
+  //   PARTITION OF images (home_id)
+  //   FOR VALUES FROM (${rangeStart}) to (${rangeEnd})`;
 
-    await client.query(partitionQuery);
-  }
+  //   await client.query(partitionQuery);
+  // }
 }
 
 async function deletePartitionedTable() {
-  await client.query(`DROP TABLE IF EXISTS homes`);
+  await client.query(`DROP TABLE IF EXISTS images`);
+  // for (let i = 0; i < 10000000; i += 100000) {
+  //   rangeStart = i;
+  //   rangeEnd = i + 100000;
+  //   const partitionQuery = 
+  //   `DROP TABLE IF EXISTS images_${rangeStart}_${rangeEnd}`;
+  //   await client.query(partitionQuery)
+  // }
+}
+
+async function indexPartitionedTables() {
   for (let i = 0; i < 10000000; i += 100000) {
     rangeStart = i;
     rangeEnd = i + 100000;
-    const partitionQuery = 
-    `DROP TABLE IF EXISTS homes_${rangeStart}_${rangeEnd}`;
-
-    await client.query(partitionQuery)
+    const indexQuery = 
+    `CREATE INDEX images_id_index_${rangeStart} ON images_${rangeStart}_${rangeEnd} (home_id)`;
+    await client.query(indexQuery);
+    console.log(`indexed at: ${rangeStart}`)
   }
+  console.timeEnd('timer');
 }
 
 async function seedFile(fileNum, offset) {
   const csv = await readJSON(fileNum, offset);
-  const seedQuery = `COPY homes
+  const seedQuery = `COPY images
   FROM '${__dirname + `/csv/${fileNum}`}' DELIMITER ',' CSV HEADER;` 
 
   writeFileAsync(`./csv/${fileNum}`, csv)
@@ -73,7 +88,15 @@ function readJSON(fileNum, offset) {
       let objArr = [];
       let data = JSON.parse(result);
       for(let listing in data) {
-        objArr.push({"home_id": parseInt(listing) + offset, images: data[listing]})
+        for (let image in data[listing]) {
+          objArr.push({
+            "id": ID_NUM++,
+            "home_id": parseInt(listing) + offset, 
+            "image": image,
+            "image_id": parseInt(image.split('=')[1]),
+            "caption": data[listing][image]
+          })
+        }
       }
       const csv = json2csvParser.parse(objArr);
       return csv;
@@ -95,6 +118,7 @@ async function seedDB() {
     await Promise.all(chunk.map(fileNum => seedFile(fileNum, fileNum * 2000)));
     console.log(`chunked from: ${i * 50} to ${49 + (i * 50)}`);  
   }
+  // indexPartitionedTables();
   console.timeEnd('timer');
 }
 
