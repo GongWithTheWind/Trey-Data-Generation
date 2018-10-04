@@ -26,44 +26,6 @@ const mainTableQuery =
 
 client.connect()
 
-async function createPartitionedTable() {
-  await client.query(mainTableQuery);
-  // for (let i = 0; i < 10000000; i += 100000) {
-  //   rangeStart = i;
-  //   rangeEnd = i + 100000;
-
-  //   const partitionQuery = 
-  //   `CREATE TABLE images_${rangeStart}_${rangeEnd}
-  //   PARTITION OF images (home_id)
-  //   FOR VALUES FROM (${rangeStart}) to (${rangeEnd})`;
-
-  //   await client.query(partitionQuery);
-  // }
-}
-
-async function deletePartitionedTable() {
-  await client.query(`DROP TABLE IF EXISTS images`);
-  // for (let i = 0; i < 10000000; i += 100000) {
-  //   rangeStart = i;
-  //   rangeEnd = i + 100000;
-  //   const partitionQuery = 
-  //   `DROP TABLE IF EXISTS images_${rangeStart}_${rangeEnd}`;
-  //   await client.query(partitionQuery)
-  // }
-}
-
-async function indexPartitionedTables() {
-  for (let i = 0; i < 10000000; i += 100000) {
-    rangeStart = i;
-    rangeEnd = i + 100000;
-    const indexQuery = 
-    `CREATE INDEX images_id_index_${rangeStart} ON images_${rangeStart}_${rangeEnd} (home_id)`;
-    await client.query(indexQuery);
-    console.log(`indexed at: ${rangeStart}`)
-  }
-  console.timeEnd('timer');
-}
-
 async function seedFile(fileNum, offset) {
   const csv = await readJSON(fileNum, offset);
   const seedQuery = `COPY images
@@ -107,8 +69,8 @@ function readJSON(fileNum, offset) {
 }
 
 async function seedDB() {
-  await deletePartitionedTable();
-  await createPartitionedTable();
+  await client.query(`DROP TABLE IF EXISTS images`);
+  await client.query(mainTableQuery);
 
   for (let i = 0; i < 100; i++) {
     let chunk = [];
