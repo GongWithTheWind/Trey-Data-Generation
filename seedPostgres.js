@@ -10,7 +10,7 @@ const writeFileAsync = Promise.promisify(fs.writeFile);
 const deleteFileAsync = Promise.promisify(fs.unlink);
 
 const client = new Client({
-  host: 'localhost',
+  host: process.env.PG_PORT || 'localhost',
   database: 'treypurnell',
 }) 
 
