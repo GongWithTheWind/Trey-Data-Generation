@@ -76,8 +76,8 @@ async function seedDB() {
 
   for (let i = 0; i < 100; i++) {
     let chunk = [];
-    for (let j = 0; j < 10; j++) {
-      chunk.push(j + (i * 10));
+    for (let j = 0; j < 50; j++) {
+      chunk.push(j + (i * 50));
     }
     await Promise.all(chunk.map(fileNum => seedFile(fileNum, fileNum * 2000)));
     console.log(`chunked from: ${i * 50} to ${49 + (i * 50)}`);  
