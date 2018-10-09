@@ -6,7 +6,6 @@ npm
 npm-debug.log
 node_modules/
 
-csv/
 package-lock.json
 postgresQuery.js
 cassandraQuery.js
@@ -28,3 +27,4 @@ coverage
 .grunt
 
 data/
+csv/
