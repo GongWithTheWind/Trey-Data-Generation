@@ -2,15 +2,13 @@ const { Client } = require('pg');
 const Json2csvParser = require('json2csv').Parser;
 const fs = require('fs');
 const Promise = require('bluebird');
-const fields = ["id", "home_id", "image", "image_id", "caption"];
-require('dotenv').config();
+const fields = ["home_id", "image", "image_id", "caption"];
 
 const json2csvParser = new Json2csvParser({ fields });
 const readFileAsync = Promise.promisify(fs.readFile);
 const writeFileAsync = Promise.promisify(fs.writeFile);
 const deleteFileAsync = Promise.promisify(fs.unlink);
 
-let ID_NUM = 0;
 const client = new Client({
   host: 'localhost',
   database: 'treypurnell',
@@ -18,17 +16,17 @@ const client = new Client({
 
 const mainTableQuery = 
 `CREATE TABLE images (
-  id integer NOT NULL,
+  id SERIAL,
   home_id integer NOT NULL,
   image varchar(255),
   image_id integer NOT NULL,
-  caption character varying)`; //  PARTITION BY RANGE (home_id)
+  caption character varying)`;
 
 client.connect()
 
 async function seedFile(fileNum, offset) {
   const csv = await readJSON(fileNum, offset);
-  const seedQuery = `COPY images
+  const seedQuery = `COPY images (home_id, image, image_id, caption)
   FROM '${__dirname + `/csv/${fileNum}`}' DELIMITER ',' CSV HEADER;` 
 
   writeFileAsync(`./csv/${fileNum}`, csv)
@@ -52,7 +50,6 @@ function readJSON(fileNum, offset) {
       for(let listing in data) {
         for (let image in data[listing]) {
           objArr.push({
-            "id": ID_NUM++,
             "home_id": parseInt(listing) + offset, 
             "image": image,
             "image_id": parseInt(image.split('=')[1]),
