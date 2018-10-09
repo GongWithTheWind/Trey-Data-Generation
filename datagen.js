@@ -29,9 +29,9 @@ async function genFile(index) {
 
 //This one too, can be abstracted away. 
 async function genFilesParallel (numFiles) {
-  for (let i = 0; i < 4751; i += 250) {
+  for (let i = 0; i < 4951; i += 50) {
     let chunk = [];
-    for (let j = 0; j < 250; j++) {
+    for (let j = 0; j < 50; j++) {
       chunk.push(i + j);
     }
     console.log(i, chunk);

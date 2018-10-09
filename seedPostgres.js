@@ -8,11 +8,14 @@ const json2csvParser = new Json2csvParser({ fields });
 const readFileAsync = Promise.promisify(fs.readFile);
 const writeFileAsync = Promise.promisify(fs.writeFile);
 const deleteFileAsync = Promise.promisify(fs.unlink);
+const chmodAsync = Promise.promisify(fs.chmod);
 
 const client = new Client({
-  host: 'localhost',
-  database: 'treypurnell',
-}) 
+  host: process.env.PG_PORT || 'localhost',
+  user: process.env.PG_USER || 'postgres',
+  password: process.env.PG_PASSWORD || 'soundcloud',
+  database: process.env.PG_DB || 'treypurnell',
+})
 
 const mainTableQuery = 
 `CREATE TABLE images (
@@ -32,6 +35,7 @@ async function seedFile(fileNum, offset) {
   writeFileAsync(`./csv/${fileNum}`, csv)
   .then(async (err) => {
     if(err) console.log(err);
+    await chmodAsync(`./csv/${fileNum}`, '755');
     await client.query(seedQuery);
     return deleteFileAsync(`./csv/${fileNum}`);
   })
