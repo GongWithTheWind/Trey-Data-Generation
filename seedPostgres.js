@@ -32,7 +32,7 @@ async function seedFile(fileNum, offset) {
   const seedQuery = `COPY images (home_id, image, image_id, caption)
   FROM '${__dirname + `/csv/${fileNum}`}' DELIMITER ',' CSV HEADER;` 
 
-  writeFileAsync(`./csv/${fileNum}`, csv)
+  await writeFileAsync(`./csv/${fileNum}`, csv)
   .then(async (err) => {
     if(err) console.log(err);
     await chmodAsync(`./csv/${fileNum}`, '755');
